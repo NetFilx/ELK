@@ -98,4 +98,50 @@ brew services stop elasticsearch
 
 ### 例子
 
-官网上关于shakespeare(莎士比亚全集的例子)
+**官网上关于shakespeare(莎士比亚全集的例子)**
+
+1. 下载官网上的 shakespeare.json 链接在[这里](https://www.elastic.co/guide/en/kibana/current/tutorial-load-dataset.html)
+2. shakespeare.json中的信息格式大概是这样的：
+
+```json
+{
+    "line_id": INT,
+    "play_name": "String",
+    "speech_number": INT,
+    "line_number": "String",
+    "speaker": "String",
+    "text_entry": "String",
+}
+```
+
+3. 然后如果安装了X-Pack插件支持，则需要输入用户名密码如下：
+
+``` 
+curl -XPUT -u elastic http://localhost:9200/shakespeare -d '
+{
+ "mappings" : {
+  "_default_" : {
+   "properties" : {
+    "speaker" : {"type": "string", "index" : "not_analyzed" },
+    "play_name" : {"type": "string", "index" : "not_analyzed" },
+    "line_id" : { "type" : "integer" },
+    "speech_number" : { "type" : "integer" }
+   }
+  }
+ }
+}
+';
+```
+
+如果没有安装X-Pack的支持，则吧其中的-u elastic删了就好了
+
+4. 上述就是在elasticsearch中建立了一个索引，之后的kibana就是用这个索引来读取展示elasticsearch中的信息。
+5. 接下来就是开启kibana，kibana目录下命令行输入```bin/kibana``` ,然后在management中（x-pack安装之后setting就变成了这个了），配置index，具体可以看官网上的[说明](https://www.elastic.co/guide/en/kibana/current/tutorial-define-index.html)，或者是这篇[博客](http://blog.csdn.net/ywheel1989/article/details/60519151)
+6. 至此，都已经配置结束了，只要去Discover中去检索就好啦！
+
+
+**使用Logstash实时写入数据**
+
+
+
+​    
