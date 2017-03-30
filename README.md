@@ -142,6 +142,61 @@ curl -XPUT -u elastic http://localhost:9200/shakespeare -d '
 
 **使用Logstash实时写入数据**
 
+1. 编写logstash的.conf文件，文件内容如下：
 
+```
+input{
+    file{
+        path => ["/Users/limbo/Desktop/测试数据/test/test.md"]
+	    start_position => beginning
+        ignore_older => 0
+        sincedb_path => "/dev/null"
+    }
+}   
+filter {
+    grok {
+        match => { "message" => "%{IPORHOST:clientip} - %{USER:auth} \[%{HTTPDATE:timestamp}\] \"(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})\" %{NUMBER:response} (?:%{NUMBER:bytes}|-)"}
+    }
+    date {
+        match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss +0800" ]
+    }
+}
+output{
+    elasticsearch{
+        user => "elastic"     #使用x-pack需要使用账户信息
+        password => "elastic"
+   }
+    stdout{}
+}
+```
 
-​    
+2. 文件内容解析：
+
+- input：表示logstash读取文件的一下信息和相关读取配置
+
+  1. 其中我只是用了file这个类型，还有其他四个类型，下面是摘自官网的一段简介：
+
+  > Inputs
+  >
+  > You use inputs to get data into Logstash. Some of the more commonly-used inputs are:
+  >
+  > - file: reads from a file on the filesystem, much like the UNIX command tail -0F
+  > - syslog: listens on the well-known port 514 for syslog messages and parses according to the RFC3164 format
+  > - redis: reads from a redis server, using both redis channels and redis lists. Redis is often used as a "broker" in a centralized Logstash installation, which queues Logstash events from remote Logstash "shippers".
+  > - beats: processes events sent by Filebeat.
+
+  `start_position => beginning`告诉logstash从我的log文件的头部开始往下找，不要从半中间开始。
+  `ignore_older => 0`告诉logstash不要管我的log有多古老，一律处理，否则logstash缺省会从今天开始，就不管老日志了。
+  `sincedb_path => "/dev/null"`这句话也很关键，特别是当你需要反复调试的时候，因为logstash会记住它上次处理到哪儿了，如果没有这句话的话，你再想处理同一个log文件就麻烦了，logstash会拒绝处理。现在有了这句话，就是强迫logstash忘记它上次处理的结果，从头再开始处理一遍。
+
+  - fliter:表示配置中需要用到的过滤器，其中的grok是logstash的一个重要的插件，相当于一个正则表达式，date就是根据你logstash读入的日志的日期进行过滤
+  - output：顾名思义，这就是输出，其中这里的elasticsearch表示输出到elasticsearch。
+
+  实际上Logstash 不只是一个`input | filter | output` 的数据流，而是一个 `input | decode | filter | encode | output` 的数据流，具体的配置可以参照官方的[文档](https://kibana.logstash.es/content/logstash/)
+
+  至此，单节点的搭建就已经完成了
+
+  ​
+
+# 集群搭建
+
