@@ -199,6 +199,14 @@ output{
   ## 坑点
 
   1. kibana右上角的时间选择器一定要选好，否则什么数据都有可能看不到
+  2. 如果要删除elasticsearch的index的话，可以执行
+  ```shell
+  $ curl -XDELETE 'http://your_host:9200/your_index_name'
+  ```
+  但是如果安装了x-pack的话，上述的语句输入终端的话会报一个权限错误，这时候只要在上面的语句加如用户名密码就好了
+  ```shell
+  $ curl -XDELETE 'http://your_host:9200/your_index_name' -u elastic -p changeme
+  ```
 
 # 集群搭建
 
