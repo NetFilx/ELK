@@ -198,19 +198,28 @@ output{
 
   ## 坑点
 
-  
+
   1. kibana右上角的时间选择器一定要选好，否则什么数据都有可能看不到
-  
-  2. 如果要删除elasticsearch的index的话，可以执行
-  ```shell
-  $ curl -XDELETE 'http://your_host:9200/your_index_name'
-  ```
-  
-  但是如果安装了x-pack的话，上述的语句输入终端的话会报一个权限错误，这时候只要在上面的语句加如用户名密码就好了
-  
-  ```shell
-  $ curl -XDELETE 'http://your_host:9200/your_index_name' -u elastic -p changeme
-  ```
+
+  2. 如果要删除elasticsearch的index的话，可以执行
+
+     ```shell
+     $ curl -XDELETE 'http://your_host:9200/your_index_name'
+     ```
+
+     但是如果安装了x-pack的话，上述的语句输入终端的话会报一个权限错误，这时候只要在上面的语句加如用户名密码就好了
+
+     ```Shell
+      $ curl -XDELETE 'http://your_host:9200/your_index_name' -u elastic -p changeme
+     ```
+
+  3. 关于匹配自定义正则的时候，在grok里面引入pattern_dir，在外面引入的话会到找不到的，还有制定的时候是制定目录名称，建议使用patterns，文件夹下放置自定义的文件，不需要后缀名。说一个自己碰到的，匹配换行符，抛开上面的不谈，这时候需要知道的是**Linux下的换行是\n**而**Windows下的换行是\r\n**，我在grokdebug下用的是\n，但是在本机的时候却报了很久的grokparsefail这个错误，后来发现日志文件时windows下生成的，需要改成\r\n，附上logstash默认的patterns的位置
+
+     ```
+     logstash-5.3.2/vendor/bundle/jruby/1.9/gems/logstash-patterns-core-4.1.0/patterns 
+     ```
+
+     ​
 
 # 集群搭建
 
