@@ -198,6 +198,7 @@ output{
 
   ## 坑点
 
+  
   1. kibana右上角的时间选择器一定要选好，否则什么数据都有可能看不到
   
   2. 如果要删除elasticsearch的index的话，可以执行
