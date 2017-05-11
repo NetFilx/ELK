@@ -94,6 +94,33 @@ brew services stop elasticsearch
 
 6. 在Monitoring页面中可以看到Elasticsearch和Kibana的状态，点击Indices还可以看到具体索引的状态。
 
+7. 通过shell修改密码：
+
+   修改elastic用户的密码：
+
+   ```shell
+   $ curl -XPUT -u elastic 'localhost:9200/_xpack/security/user/elastic/_password' -d '{ "password" : "123456" }'
+   ```
+
+   修改kibana用户的密码：
+
+   ```Shell
+   $ curl -XPUT -u elastic 'localhost:9200/_xpack/security/user/kibana/_password' -d '{ "password" : "123456" }'
+   ```
+
+   创建用户组和角色，创建所属用户 
+   eg：创建beats_admin用户组，该用户组对filebeat*有all权限，对.kibana*有manage，read，index权限
+
+   ```Shell
+   $ curl -XPOST -u elastic 'localhost:9200/_xpack/security/role/beats_admin' -d '{ "indices" : [ { "names" : [ "filebeat*" ], "privileges" : [ "all" ] }, { "names" : [ ".kibana*" ], "privileges" : [ "manage", "read", "index" ] } ] }'
+   ```
+
+   创建jockbeat用户，密码是jockbeat
+
+   ```shell
+   $ curl -XPOST -u elastic 'localhost:9200/_xpack/security/user/jockbeat' -d '{ "password" : "jockbeat", "full_name" : "jock beat", "email" : "john.doe@anony.mous", "roles" : [ "beats_admin" ] }'
+   ```
+
 
 
 ### 例子
@@ -199,7 +226,7 @@ output{
   ## 坑点
 
 
-  1. kibana右上角的时间选择器一定要选好，否则什么数据都有可能看不到
+1.   kibana右上角的时间选择器一定要选好，否则什么数据都有可能看不到
 
   2. 如果要删除elasticsearch的index的话，可以执行
 
